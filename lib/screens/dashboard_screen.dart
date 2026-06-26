@@ -281,26 +281,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _showIssuePicker(BuildContext context) async {
-    await context.read<SettingsProvider>().ready;
-    final config = context.read<SettingsProvider>().activeConfig;
-    if (config == null) {
-      context.read<TimerProvider>().startTimer(issue: null);
-      return;
+    try {
+      await context.read<SettingsProvider>().ready;
+      final config = context.read<SettingsProvider>().activeConfig;
+      if (!context.mounted) return;
+      if (config == null) {
+        context.read<TimerProvider>().startTimer(issue: null);
+        return;
+      }
+      if (!context.mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => _IssuePickerDialog(jiraConfig: config),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطا: $e'), backgroundColor: const Color(0xFFDA3633)),
+        );
+      }
     }
-    showDialog(
-      context: context,
-      builder: (ctx) => _IssuePickerDialog(jiraConfig: config),
-    );
   }
 
   void _showChangeIssuePicker(BuildContext context, TimerProvider timer) async {
-    await context.read<SettingsProvider>().ready;
-    final config = context.read<SettingsProvider>().activeConfig;
-    if (config == null) return;
-    showDialog(
-      context: context,
-      builder: (ctx) => _IssuePickerDialog(jiraConfig: config, isChanging: true),
-    );
+    try {
+      await context.read<SettingsProvider>().ready;
+      final config = context.read<SettingsProvider>().activeConfig;
+      if (config == null || !context.mounted) return;
+      showDialog(
+        context: context,
+        builder: (ctx) => _IssuePickerDialog(jiraConfig: config, isChanging: true),
+      );
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('خطا: $e'), backgroundColor: const Color(0xFFDA3633)),
+        );
+      }
+    }
   }
 
   void _stopTimerAndSave(BuildContext context) {

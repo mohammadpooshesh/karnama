@@ -180,7 +180,12 @@ class DatabaseService {
 
   Future<String?> getSetting(String key) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(key);
+    try {
+      return prefs.getString(key);
+    } catch (_) {
+      final val = prefs.get(key);
+      return val?.toString();
+    }
   }
 
   Future<void> setSetting(String key, String value) async {

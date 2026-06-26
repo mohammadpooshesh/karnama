@@ -80,7 +80,9 @@ class _LogScreenState extends State<LogScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final isEmbedded = widget.editLog == null && widget.timerSeconds == null;
-    return Scaffold(
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Scaffold(
       appBar: isEmbedded ? null : AppBar(
         title: Text(widget.editLog != null ? AppStrings.edit : AppStrings.newLog),
         toolbarHeight: 40,
@@ -215,6 +217,7 @@ class _LogScreenState extends State<LogScreen> {
           ],
         ),
       ),
+    ),
     );
   }
 

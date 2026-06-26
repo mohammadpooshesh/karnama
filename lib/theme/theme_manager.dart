@@ -22,7 +22,8 @@ class ThemeManager extends ChangeNotifier {
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
     _selectedThemeIndex = prefs.getInt(_themeIndexKey) ?? 0;
-    _isDarkMode = prefs.getBool(_darkModeKey) ?? false;
+    final darkVal = prefs.get(_darkModeKey);
+    _isDarkMode = darkVal == true || darkVal == 'true';
     notifyListeners();
   }
 
@@ -38,7 +39,7 @@ class ThemeManager extends ChangeNotifier {
     _isDarkMode = !_isDarkMode;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_darkModeKey, _isDarkMode);
+    await prefs.setString(_darkModeKey, _isDarkMode ? 'true' : 'false');
   }
 
   Future<void> setDarkMode(bool value) async {
@@ -46,6 +47,6 @@ class ThemeManager extends ChangeNotifier {
     _isDarkMode = value;
     notifyListeners();
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_darkModeKey, value);
+    await prefs.setString(_darkModeKey, value ? 'true' : 'false');
   }
 }
