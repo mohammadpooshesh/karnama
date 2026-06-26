@@ -54,27 +54,14 @@ class TrayService {
   }
 
   int _createIcon() {
-    final hdc = CreateCompatibleDC(0);
-    final hbmp = CreateCompatibleBitmap(hdc, 16, 16);
-    SelectObject(hdc, hbmp);
-    final brush = CreateSolidBrush(0xFF1A73E8);
-    final r = calloc<RECT>();
-    r.ref.left = 0;
-    r.ref.top = 0;
-    r.ref.right = 16;
-    r.ref.bottom = 16;
-    FillRect(hdc, r, brush);
-    free(r);
-    DeleteObject(brush);
-    SelectObject(hdc, GetStockObject(SYSTEM_FONT));
-    final info = calloc<ICONINFO>();
-    info.ref.fIcon = TRUE;
-    info.ref.hbmMask = hbmp;
-    info.ref.hbmColor = hbmp;
-    final hicon = CreateIconIndirect(info);
-    free(info);
-    DeleteObject(hbmp);
-    DeleteDC(hdc);
+    final hInstance = GetModuleHandle(Pointer<Utf16>.fromAddress(0));
+    final hicon = LoadImageW(
+      hInstance,
+      MAKEINTRESOURCEW(101),
+      IMAGE_ICON,
+      16, 16,
+      LR_DEFAULTCOLOR,
+    );
     return hicon;
   }
 
