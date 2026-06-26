@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/jira_config.dart';
 import '../providers/settings_provider.dart';
+import '../theme/theme_manager.dart';
+import '../theme/themes.dart';
 import '../l10n/strings_fa.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -237,12 +239,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             const SizedBox(height: 16),
           ],
+          const SizedBox(height: 16),
+          _buildSection(
+            context,
+            title: 'تم',
+            subtitle: 'رنگ‌بندی برنامه را انتخاب کنید',
+            child: Column(
+              children: [
+                ...List.generate(AppThemes.themes.length, (i) {
+                  final t = AppThemes.themes[i];
+                  final isSelected = context.watch<ThemeManager>().selectedThemeIndex == i;
+                  return RadioListTile<int>(
+                    title: Text(t.name),
+                    subtitle: Text(
+                      ['حرفه‌ای آبی', 'طبیعت سبز', 'بنفش مدرن'][i],
+                      style: theme.textTheme.bodySmall,
+                    ),
+                    value: i,
+                    groupValue: context.watch<ThemeManager>().selectedThemeIndex,
+                    onChanged: (v) {
+                      if (v != null) context.read<ThemeManager>().setTheme(v);
+                    },
+                    activeColor: theme.colorScheme.primary,
+                  );
+                }),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
           _buildSection(
             context,
             title: AppStrings.darkMode,
             child: Row(
               children: [
-                Icon(provider.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                Icon(context.watch<ThemeManager>().isDarkMode
+                    ? Icons.dark_mode : Icons.light_mode,
                     size: 20, color: theme.colorScheme.primary),
                 const SizedBox(width: 10),
                 Expanded(
@@ -250,15 +281,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(AppStrings.darkMode, style: theme.textTheme.bodyLarge),
-                      Text(provider.isDarkMode ? 'فعال' : 'غیرفعال',
+                      Text(context.watch<ThemeManager>().isDarkMode ? 'فعال' : 'غیرفعال',
                           style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
                     ],
                   ),
                 ),
                 Switch(
-                  value: provider.isDarkMode,
-                  onChanged: (_) => provider.toggleDarkMode(),
+                  value: context.watch<ThemeManager>().isDarkMode,
+                  onChanged: (_) => context.read<ThemeManager>().toggleDarkMode(),
                   activeColor: theme.colorScheme.primary,
                 ),
               ],
