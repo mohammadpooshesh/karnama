@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="windows/runner/resources/app_icon.ico" width="64" height="64" alt="Karnama Logo">
+  <img src="assets/images/karnama-logo.png" width="200" alt="Karnama Logo">
   <h1 align="center">کارنما</h1>
   <p align="center">⏱  Time tracker for Jira — Windows desktop app built with Flutter</p>
   <p align="center">
