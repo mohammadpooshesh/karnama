@@ -1,0 +1,42 @@
+# Flutter
+.dart_tool/
+.packages
+.pub/
+build/
+*.iml
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Dart
+.dart_tool/
+*.log
+*.pid
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.sln
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Windows
+*.exe
+*.exe.config
+*.dll
+*.pdb
+*.exp
+*.ilk
+*.lib
+*.obj
+*.nupkg
+
+# macOS
+.DS_Store
+*.dSYM
+
+# Project
+.karnama/
+karnama_error.log
