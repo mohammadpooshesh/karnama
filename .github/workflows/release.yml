@@ -1,0 +1,85 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          
+      - name: Install dependencies
+        run: flutter pub get
+        
+      - name: Build Linux release
+        run: flutter build linux --release
+        
+      - name: Create Linux artifact
+        run: |
+          cd build/linux/x64/release/bundle
+          tar -czf ../../../karnama-linux.tar.gz .
+          
+      - name: Upload Linux artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: karnama-linux
+          path: build/linux/karnama-linux.tar.gz
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          
+      - name: Install dependencies
+        run: flutter pub get
+        
+      - name: Build Windows release
+        run: flutter build windows --release
+        
+      - name: Create Windows artifact
+        run: Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath build\windows\karnama-windows.zip
+        
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: karnama-windows
+          path: build/windows/karnama-windows.zip
+
+  release:
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: karnama-linux
+          path: artifacts
+          
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: karnama-windows
+          path: artifacts
+          
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            artifacts/karnama-linux.tar.gz
+            artifacts/karnama-windows.zip
