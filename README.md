@@ -1,7 +1,7 @@
 <div align="center">
   <img src="assets/images/karnama-logo.png" width="200" alt="Karnama Logo">
   <h1 align="center">کارنما</h1>
-  <p align="center">⏱  Time tracker for Jira — Windows desktop app built with Flutter</p>
+  <p align="center">⏱  Time tracker for Jira — Cross-platform desktop app built with Flutter</p>
   <p align="center">
     <b>زمانت رو ثبت کن. با Jira همگام‌سازی کن. بهره‌وریت رو ببین.</b>
   </p>
@@ -31,38 +31,144 @@
 
 ### Prerequisites
 
-- Windows 10 or later (64-bit)
-- Flutter 3.38+ / Dart 3.10+ (for development)
-- A Jira Server or Data Center instance (optional — app works offline too)
+| Requirement | Windows | Linux |
+|-------------|---------|-------|
+| **OS** | Windows 10+ (64-bit) | Ubuntu 20.04+, Debian 11+, or similar |
+| **Flutter** | 3.38+ | 3.38+ |
+| **Dart** | 3.10+ | 3.10+ |
+| **CMake** | Included with Flutter | 3.13+ |
+| **Ninja** | Included with Flutter | 1.10+ |
+| **Jira** | Optional (app works offline) | Optional (app works offline) |
 
-### Installation
+> **Note:** If `pub.dev` is blocked in your region, see the [Proxy / Mirror Setup](#proxy--mirror-setup) section.
 
-**From release build:**
+## 🏗 Building from Source
 
-```bash
-# Navigate to release directory
-cd build\windows\x64\runner\Release
-
-# Run the executable
-.\karnama.exe
-```
-
-**From source:**
+### Clone the Repository
 
 ```bash
-# Clone the repository
 git clone <repo-url>
 cd karnama
+```
 
-# Get dependencies (offline mode — pub.dev may be blocked)
-flutter pub get --offline
+---
 
-# Build for Windows
-flutter build windows --release
+### Windows
+
+#### Install Flutter (if not installed)
+
+1. Download Flutter SDK from [flutter.dev](https://flutter.dev)
+2. Extract and add to `PATH`
+3. Run:
+   ```bash
+   flutter doctor
+   ```
+
+#### Build
+
+```bash
+# Get dependencies
+flutter pub get
+
+# Build release
+flutter build windows
 
 # Run
 .\build\windows\x64\runner\Release\karnama.exe
 ```
+
+The build output will be in `build\windows\x64\runner\Release\`.
+
+---
+
+### Linux
+
+#### Install System Dependencies
+
+**Ubuntu / Debian:**
+
+```bash
+sudo apt update
+sudo apt install -y \
+  cmake ninja-build pkg-config clang \
+  libgtk-3-dev libayatana-appindicator3-dev \
+  libxss-dev liblzma-dev libstdc++-12-dev
+```
+
+**Fedora:**
+
+```bash
+sudo dnf install -y \
+  cmake ninja-build pkgconf gcc-c++ \
+  gtk3-devel libayatana-appindicator-gtk3-devel \
+  libXScrnSaver-devel libstdc++-devel
+```
+
+**Arch Linux:**
+
+```bash
+sudo pacman -S \
+  cmake ninja pkgconf gcc \
+  gtk3 libayatana-appindicator \
+  libxss
+```
+
+#### Install Flutter (if not installed)
+
+```bash
+# Clone Flutter SDK
+git clone https://github.com/flutter/flutter.git -b stable ~/flutter
+export PATH="$HOME/flutter/bin:$PATH"
+
+# Or download a release archive (if git clone is slow)
+curl -L -o /tmp/flutter.tar.xz \
+  "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.4-stable.tar.xz"
+tar xf /tmp/flutter.tar.xz -C ~
+export PATH="$HOME/flutter/bin:$PATH"
+```
+
+Add to your `~/.bashrc` or `~/.zshrc`:
+
+```bash
+export PATH="$HOME/flutter/bin:$HOME/flutter/bin/cache/dart-sdk/bin:$PATH"
+```
+
+#### Build
+
+```bash
+# Get dependencies
+flutter pub get
+
+# Build release
+flutter build linux
+
+# Run
+./build/linux/x64/release/bundle/karnama
+```
+
+The build output will be in `build/linux/x64/release/bundle/`.
+
+---
+
+### Proxy / Mirror Setup
+
+If `pub.dev` or Flutter artifacts are blocked in your region (e.g., Iran, China), set these environment variables before running any Flutter command:
+
+```bash
+export PUB_HOSTED_URL="https://pub.flutter-io.cn"
+export FLUTTER_STORAGE_BASE_URL="https://storage.flutter-io.cn"
+```
+
+Add them to `~/.bashrc` / `~/.zshrc` to persist.
+
+Then run:
+
+```bash
+flutter pub get
+flutter build linux   # or: flutter build windows
+```
+
+---
 
 ## 🔧 Jira Configuration
 
@@ -99,10 +205,8 @@ POST /rest/api/2/issue/{issueKey}/worklog
   - Start/Stop timer
   - Pause/Resume (dynamic label based on state)
   - Open window
-  - Settings
   - Exit
 - **Blinking icon**: Indicates timer is actively running
-- **Paused icon**: Solid icon when timer is paused
 - **Tooltip**: Shows elapsed time and active issue key
 
 ### Keyboard Shortcuts
@@ -145,13 +249,23 @@ karnama/
 │       └── timer_widget.dart
 ├── windows/
 │   └── runner/
-│       ├── flutter_window.cpp    # MethodChannel handlers
-│       ├── main.cpp              # Window creation
-│       ├── resource.h
-│       ├── Runner.rc
-│       ├── tray_handler.cpp      # System tray C++ impl
+│       ├── flutter_window.cpp    # MethodChannel handlers (Windows)
+│       ├── main.cpp              # Win32 window creation
+│       ├── tray_handler.cpp      # System tray — Win32 Shell_NotifyIcon
 │       └── tray_handler.h
-├── .gitignore
+├── linux/
+│   ├── CMakeLists.txt            # Linux build configuration
+│   ├── flutter/
+│   │   └── CMakeLists.txt        # Flutter managed build rules
+│   └── runner/
+│       ├── main.cc               # GTK application entry
+│       ├── my_application.cc     # GTK window + MethodChannel handlers
+│       ├── my_application.h
+│       └── CMakeLists.txt        # Runner build rules
+├── assets/
+│   ├── fonts/                    # Vazir Persian font
+│   └── images/                   # App icons and images
+├── pubspec.yaml
 └── README.md
 ```
 
@@ -159,16 +273,23 @@ karnama/
 
 ### Architecture
 - **State Management**: Provider pattern
-- **Storage**: JSON files in `Documents\karnama\`
-- **Window Integration**: `MethodChannel` between Dart and C++
-- **System Tray**: Pure Win32 API (`Shell_NotifyIcon`) — no third-party packages
-- **Idle Detection**: `GetLastInputInfo()` via Windows API
-- **Font**: Vazirmatn v33.003 for Persian typography
-- **Build**: Flutter 3.38.8, Dart 3.10.7
+- **Storage**: JSON files in `Documents/karnama/` (Windows) or `~/.local/share/karnama/` (Linux)
+- **Window Integration**: `MethodChannel` between Dart and native code
+- **Font**: Vazirmatn for Persian typography
+
+### Platform-Specific Details
+
+| Component | Windows | Linux |
+|-----------|---------|-------|
+| **Window API** | Win32 (`CreateWindowEx`, `HWND`) | GTK3 (`GtkApplication`, `FlView`) |
+| **System Tray** | Win32 `Shell_NotifyIcon` | Ayatana AppIndicator3 |
+| **Idle Detection** | `GetLastInputInfo()` | X11 Screen Saver Extension |
+| **Window Drag** | `PostMessageW(WM_NCLBUTTONDOWN)` | `gdk_device_get_position` loop |
+| **Build System** | CMake + MSVC | CMake + Ninja + Clang |
 
 ### Key Design Decisions
 - **No pub.dev packages beyond cached**: `provider`, `path_provider`, `shared_preferences`
-- **Own tray implementation**: Dart FFI was crashing, so C++ `tray_handler` was built
+- **Own tray implementation**: Platform-native C/C++ tray handler per OS
 - **JSON over SQLite**: `sqflite` not available in offline cache
 - **Bearer Token over Basic Auth**: Jira Server 9.4+ with Basic Auth disabled
 - **UTF-8 body encoding**: Persian characters require `utf8.encode()` + `request.add()`
@@ -178,10 +299,13 @@ karnama/
 | Problem | Solution |
 |---------|----------|
 | Jira connection fails | Check your Bearer token expiry, verify server URL |
-| Persian text encoding | Settings appends `request.add(utf8.encode(body))` — ensure not using `request.write()` |
-| App won't start after update | Delete `%USERPROFILE%\Documents\karnama\` and retry |
-| pub.dev 403 errors | Use `flutter pub get --offline` |
-| Tray icon not showing | Restart Windows Explorer, or app may need admin |
+| Persian text encoding | Ensure using `request.add(utf8.encode(body))`, not `request.write()` |
+| App won't start after update | Delete `Documents/karnama/` (Windows) or `~/.local/share/karnama/` (Linux) and retry |
+| pub.dev 403 errors | Set `PUB_HOSTED_URL="https://pub.flutter-io.cn"` (see [Proxy / Mirror Setup](#proxy--mirror-setup)) |
+| Tray icon not showing (Windows) | Restart Windows Explorer, or run as admin |
+| Tray icon not showing (Linux) | Ensure `libayatana-appindicator3` is installed and your DE supports StatusNotifierItem |
+| `cmake` not found | Install via your package manager (see [Linux dependencies](#install-system-dependencies)) |
+| Flutter command hangs | Set `FLUTTER_STORAGE_BASE_URL="https://storage.flutter-io.cn"` if in a blocked region |
 
 ## 📝 License
 
