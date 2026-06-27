@@ -70,9 +70,9 @@ jobs:
           Export-PfxCertificate -Cert $cert -FilePath "certificate.pfx" -Password $pass
           (Get-Content pubspec.yaml) -replace '(msix_version: .*)', "`$1`n  certificate_path: certificate.pfx`n  certificate_password: password" -replace 'msix_version: 1.0.0.0', "msix_version: ${VERSION}.0" | Set-Content pubspec.yaml
           dart run msix:create --install-certificate false
+          $msix = Get-ChildItem -Path build\windows -Recurse -Filter *.msix | Select-Object -First 1
           New-Item -ItemType Directory -Force -Path build\windows
-          Move-Item -Force *.msix build\windows\karnama-$VERSION-windows.msix
-          if (-not (Test-Path "build\windows\karnama-$VERSION-windows.msix")) { throw "MSIX file not created" }
+          Move-Item -Force $msix.FullName build\windows\karnama-$VERSION-windows.msix
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
