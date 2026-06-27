@@ -62,23 +62,46 @@ jobs:
       - name: Build Windows release
         run: flutter build windows --release
 
-      - name: Create MSIX installer
+      - name: Create Windows installer
         run: |
           $VERSION = "$env:GITHUB_REF_NAME" -replace '^v'
-          $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=Karnama" -KeyUsage DigitalSignature -FriendlyName "Karnama" -CertStoreLocation "Cert:\CurrentUser\My"
-          $pass = ConvertTo-SecureString -String "password" -Force -AsPlainText
-          Export-PfxCertificate -Cert $cert -FilePath "certificate.pfx" -Password $pass
-          (Get-Content pubspec.yaml) -replace '(msix_version: .*)', "`$1`n  certificate_path: certificate.pfx`n  certificate_password: password" -replace 'msix_version: 1.0.0.0', "msix_version: ${VERSION}.0" | Set-Content pubspec.yaml
-          dart run msix:create --install-certificate false
-          $msix = Get-ChildItem -Path build\windows -Recurse -Filter *.msix | Select-Object -First 1
-          New-Item -ItemType Directory -Force -Path build\windows
-          Move-Item -Force $msix.FullName build\windows\karnama-$VERSION-windows.msix
+          choco install innosetup --no-progress -y
+          $iss = @"
+#define MyAppName "Karnama"
+#define MyAppVersion "$VERSION"
+#define MyAppPublisher "Mohammadooshesh"
+#define MyAppURL "https://github.com/mohammadpooshesh/karnama"
+
+[Setup]
+AppName={#MyAppName}
+AppVersion={#MyAppVersion}
+AppPublisher={#MyAppPublisher}
+AppPublisherURL={#MyAppURL}
+DefaultDirName={autopf}\{#MyAppName}
+DefaultGroupName={#MyAppName}
+OutputDir=build\windows
+OutputBaseFilename=karnama-$VERSION-windows
+Compression=lzma
+SolidCompression=yes
+UninstallDisplayIcon={app}\karnama.exe
+
+[Files]
+Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{group}\Karnama"; Filename: "{app}\karnama.exe"
+Name: "{group}\Uninstall Karnama"; Filename: "{uninstallexe}"
+"@
+          $iss | Set-Content -Path "installer.iss"
+          $iscc = (Get-Command "ISCC.exe" -ErrorAction SilentlyContinue).Source
+          if (-not $iscc) { $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
+          & $iscc installer.iss
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: karnama-windows
-          path: build/windows/karnama-*.msix
+          path: build/windows/karnama-*.exe
 
   release:
     needs: [build-linux, build-windows]
@@ -104,4 +127,4 @@ jobs:
           generate_release_notes: true
           files: |
             artifacts/*.deb
-            artifacts/*.msix
+            artifacts/*.exe
