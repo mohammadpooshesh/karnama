@@ -72,7 +72,7 @@ jobs:
           Add-Content installer.iss "#define MyAppPublisher ""Mohammadooshesh"""
           Add-Content installer.iss '#define MyAppURL "https://github.com/mohammadpooshesh/karnama"'
           Add-Content installer.iss ""
-          Add-Content installer.iss "Setup"
+          Add-Content installer.iss '[Setup]'
           Add-Content installer.iss "AppName={#MyAppName}"
           Add-Content installer.iss "AppVersion={#MyAppVersion}"
           Add-Content installer.iss "AppPublisher={#MyAppPublisher}"
@@ -85,10 +85,10 @@ jobs:
           Add-Content installer.iss "SolidCompression=yes"
           Add-Content installer.iss "UninstallDisplayIcon={app}\karnama.exe"
           Add-Content installer.iss ""
-          Add-Content installer.iss "Files"
+          Add-Content installer.iss '[Files]'
           Add-Content installer.iss 'Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs'
           Add-Content installer.iss ""
-          Add-Content installer.iss "Icons"
+          Add-Content installer.iss '[Icons]'
           Add-Content installer.iss 'Name: "{group}\Karnama"; Filename: "{app}\karnama.exe"'
           Add-Content installer.iss 'Name: "{group}\Uninstall Karnama"; Filename: "{uninstallexe}"'
           $iscc = (Get-Command "ISCC.exe" -ErrorAction SilentlyContinue).Source
