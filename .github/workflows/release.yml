@@ -65,8 +65,7 @@ jobs:
       - name: Create MSIX installer
         run: |
           $VERSION = "$env:GITHUB_REF_NAME" -replace '^v'
-          dart run msix --create-certificate --install-certificate
-          dart run msix --build --version $VERSION --output-path build\windows\karnama-$VERSION-windows.msix
+          dart run msix:create --msix-version "$VERSION.0"
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v7

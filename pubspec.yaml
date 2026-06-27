@@ -47,6 +47,12 @@ dev_dependencies:
     sdk: flutter
   msix: ^3.17.0
 
+msix_config:
+  display_name: Karnama
+  publisher_display_name: Mohammadooshesh
+  identity_name: com.karnama.app
+  msix_version: 1.0.0.0
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
