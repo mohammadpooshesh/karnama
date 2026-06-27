@@ -65,7 +65,8 @@ jobs:
       - name: Create MSIX installer
         run: |
           $VERSION = "$env:GITHUB_REF_NAME" -replace '^v'
-          dart run msix:create --msix-version "$VERSION.0"
+          (Get-Content pubspec.yaml) -replace 'msix_version: .*', "msix_version: $VERSION.0" | Set-Content pubspec.yaml
+          dart run msix:create
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v7
