@@ -32,32 +32,12 @@ jobs:
           VERSION=${GITHUB_REF_NAME#v}
           BUNDLE="build/linux/x64/release/bundle"
           PKG="build/linux/karnama_$VERSION"
-          mkdir -p "$PKG/DEBIAN"
-          mkdir -p "$PKG/usr/bin"
-          mkdir -p "$PKG/usr/share/applications"
-          mkdir -p "$PKG/usr/share/karnama"
+          mkdir -p "$PKG/DEBIAN" "$PKG/usr/bin" "$PKG/usr/share/applications" "$PKG/usr/share/karnama"
           cp -r "$BUNDLE"/* "$PKG/usr/share/karnama/"
           printf '#!/bin/sh\nexec /usr/share/karnama/karnama "$@"\n' > "$PKG/usr/bin/karnama"
           chmod +x "$PKG/usr/bin/karnama"
-          cat > "$PKG/usr/share/applications/karnama.desktop" << DESKTOP
-[Desktop Entry]
-Name=Karnama
-Comment=Karnama Application
-Exec=/usr/bin/karnama
-Type=Application
-Categories=Utility;
-Terminal=false
-DESKTOP
-          cat > "$PKG/DEBIAN/control" << CONTROL
-Package: karnama
-Version: $VERSION
-Section: utils
-Priority: optional
-Architecture: amd64
-Maintainer: Karnama Team
-Description: Karnama application
-Depends: libgtk-3-0, libayatana-appindicator3-1
-CONTROL
+          printf '[Desktop Entry]\nName=Karnama\nComment=Karnama Application\nExec=/usr/bin/karnama\nType=Application\nCategories=Utility;\nTerminal=false\n' > "$PKG/usr/share/applications/karnama.desktop"
+          printf 'Package: karnama\nVersion: %s\nSection: utils\nPriority: optional\nArchitecture: amd64\nMaintainer: Karnama Team\nDescription: Karnama application\nDepends: libgtk-3-0, libayatana-appindicator3-1\n' "$VERSION" > "$PKG/DEBIAN/control"
           dpkg-deb --build "$PKG" "build/linux/karnama_${VERSION}_amd64.deb"
 
       - name: Upload Linux artifact
