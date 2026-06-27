@@ -63,20 +63,15 @@ jobs:
         run: flutter build windows --release
 
       - name: Create Windows installer
+        shell: pwsh
         run: |
-          $VERSION = "$env:GITHUB_REF_NAME" -replace '^v'
+          $v = "$env:GITHUB_REF_NAME" -replace '^v'
           choco install innosetup --no-progress -y
-          @"
-#define MyAppName "Karnama"
-#define MyAppVersion "$VERSION"
-#define MyAppPublisher "Mohammadooshesh"
-#define MyAppURL "https://github.com/mohammadpooshesh/karnama"
-
-#define SetupAppName "Karnama"
-#define SetupAppVersion "$VERSION"
-#define SetupAppPublisher "Mohammadooshesh"
-#define SetupAppURL "https://github.com/mohammadpooshesh/karnama"
-"@ | Set-Content -Path "installer.iss"
+          Set-Content installer.iss "#define MyAppName ""Karnama"""
+          Add-Content installer.iss "#define MyAppVersion ""$v"""
+          Add-Content installer.iss "#define MyAppPublisher ""Mohammadooshesh"""
+          Add-Content installer.iss '#define MyAppURL "https://github.com/mohammadpooshesh/karnama"'
+          Add-Content installer.iss ""
           Add-Content installer.iss "Setup"
           Add-Content installer.iss "AppName={#MyAppName}"
           Add-Content installer.iss "AppVersion={#MyAppVersion}"
@@ -85,17 +80,17 @@ jobs:
           Add-Content installer.iss "DefaultDirName={autopf}\{#MyAppName}"
           Add-Content installer.iss "DefaultGroupName={#MyAppName}"
           Add-Content installer.iss "OutputDir=build\windows"
-          Add-Content installer.iss "OutputBaseFilename=karnama-$VERSION-windows"
+          Add-Content installer.iss "OutputBaseFilename=karnama-$v-windows"
           Add-Content installer.iss "Compression=lzma"
           Add-Content installer.iss "SolidCompression=yes"
           Add-Content installer.iss "UninstallDisplayIcon={app}\karnama.exe"
           Add-Content installer.iss ""
           Add-Content installer.iss "Files"
-          Add-Content installer.iss "Source: `"build\windows\x64\runner\Release\*`"; DestDir: `"{app}`"; Flags: ignoreversion recursesubdirs createallsubdirs"
+          Add-Content installer.iss 'Source: "build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs'
           Add-Content installer.iss ""
           Add-Content installer.iss "Icons"
-          Add-Content installer.iss "Name: `"{group}\Karnama`"; Filename: `"{app}\karnama.exe`""
-          Add-Content installer.iss "Name: `"{group}\Uninstall Karnama`"; Filename: `"{uninstallexe}`""
+          Add-Content installer.iss 'Name: "{group}\Karnama"; Filename: "{app}\karnama.exe"'
+          Add-Content installer.iss 'Name: "{group}\Uninstall Karnama"; Filename: "{uninstallexe}"'
           $iscc = (Get-Command "ISCC.exe" -ErrorAction SilentlyContinue).Source
           if (-not $iscc) { $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
           & $iscc installer.iss
