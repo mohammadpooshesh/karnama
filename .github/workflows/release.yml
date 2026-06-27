@@ -37,10 +37,7 @@ jobs:
           mkdir -p "$PKG/usr/share/applications"
           mkdir -p "$PKG/usr/share/karnama"
           cp -r "$BUNDLE"/* "$PKG/usr/share/karnama/"
-          cat > "$PKG/usr/bin/karnama" << 'SCRIPT'
-#!/bin/sh
-exec /usr/share/karnama/karnama "$@"
-SCRIPT
+          printf '#!/bin/sh\nexec /usr/share/karnama/karnama "$@"\n' > "$PKG/usr/bin/karnama"
           chmod +x "$PKG/usr/bin/karnama"
           cat > "$PKG/usr/share/applications/karnama.desktop" << DESKTOP
 [Desktop Entry]
