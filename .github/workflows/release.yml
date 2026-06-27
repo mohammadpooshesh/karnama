@@ -65,10 +65,14 @@ jobs:
       - name: Create MSIX installer
         run: |
           $VERSION = "$env:GITHUB_REF_NAME" -replace '^v'
-          (Get-Content pubspec.yaml) -replace 'msix_version: .*', "msix_version: $VERSION.0" | Set-Content pubspec.yaml
-          "y" | dart run msix:create
+          $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=Karnama" -KeyUsage DigitalSignature -FriendlyName "Karnama" -CertStoreLocation "Cert:\CurrentUser\My"
+          $pass = ConvertTo-SecureString -String "password" -Force -AsPlainText
+          Export-PfxCertificate -Cert $cert -FilePath "certificate.pfx" -Password $pass
+          (Get-Content pubspec.yaml) -replace '(msix_version: .*)', "`$1`n  certificate_path: certificate.pfx`n  certificate_password: password" -replace 'msix_version: 1.0.0.0', "msix_version: ${VERSION}.0" | Set-Content pubspec.yaml
+          dart run msix:create
           New-Item -ItemType Directory -Force -Path build\windows
           Move-Item -Force *.msix build\windows\karnama-$VERSION-windows.msix
+          if (-not (Test-Path "build\windows\karnama-$VERSION-windows.msix")) { throw "MSIX file not created" }
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
