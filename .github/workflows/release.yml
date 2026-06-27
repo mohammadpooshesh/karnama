@@ -66,7 +66,7 @@ jobs:
         run: |
           $VERSION = "$env:GITHUB_REF_NAME" -replace '^v'
           (Get-Content pubspec.yaml) -replace 'msix_version: .*', "msix_version: $VERSION.0" | Set-Content pubspec.yaml
-          dart run msix:create
+          "y" | dart run msix:create
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v7
